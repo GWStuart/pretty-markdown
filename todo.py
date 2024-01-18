@@ -31,9 +31,12 @@ print(space)
 
 
 lst = """
-- example 1
-- here is a longer example
-- i also need to do this btw
+- python: continue on the pretty-markdown
+- github: continue on dotfiles
+- uni: finish course preferencing + other work
+- buy present for matt + will
+- read about modern economic theory
+- look at socialism
 """.split("\n")[1:-1]
 
 left_spacing = spacing[:-4]  # ((content_width - len(max(lst))) // 2)
