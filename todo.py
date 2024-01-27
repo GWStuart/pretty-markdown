@@ -1,4 +1,22 @@
-import os
+import utils
+import sys
+
+if len(sys.argv) == 1:
+    print("Script regires an argument to run")
+    quit()
+
+argument = sys.argv[1]
+if argument == "-h" or argument == "--help":
+    print("help message")
+    quit()
+
+try:
+    with open(argument, "r") as f:
+        utils.render_file(f.readlines())
+except FileNotFoundError:
+    print("File not found")
+
+quit()
 
 """
 A python script that prints my todo list
