@@ -1,14 +1,29 @@
 import os
 import pyfiglet
-from pyfiglet import FigletFont
+from pyfiglet import FigletFont, Figlet
 
 columns = os.get_terminal_size().columns
-content_width = 100 # should be even
-box_start = (columns - (content_width + 2)) // 2
-end = "│"
-left = " " * box_start + end 
-space = left + "\x1b[1;32;40m" + " " * content_width + "\x1b[0m" + end 
 
+if columns > 120: 
+    content_width = 100 # should be even
+elif columns > 90:
+    content_width = columns - 20
+elif columns > 75:
+    content_width = columns - 10
+elif columns > 40:
+    content_width = columns - 4 
+else:
+    content_width = columns - 2
+
+box_start = (columns - (content_width + 2)) // 2
+left = " " * box_start + "│" 
+
+font = "standard" # ~/github/pretty-markdown/big-money-ne"
+figlets = [Figlet(font=font, width=content_width, justify="center"),
+           Figlet(font=font, width=content_width)]
+# figlet_center = Figlet(font=font, width=content_width, justify="center")
+# figlet_left = Figlet(font=font, width=content_width)
+font_height = figlets[0].Font.height
 
 def render_file(file):
     # render top of file
@@ -20,28 +35,31 @@ def render_file(file):
     print(left[:-1] + "╰" + "─" * content_width + "╯")
 
 def print_ascii(f):
-    spacing = " " * ((content_width - len(f[1])) // 2)
-    for line in f:
-        print(left + "\x1b[1;31;40m" + spacing + line + spacing + "\x1b[0m" +  "│")
+    rows = int((len(f) - 1) / font_height)
+    for i in range(rows):
+        for line in f[i*font_height:(i+1)*font_height]:
+            print_formatted(line, modifiers="\x1b[1;31;40m")
 
-    # for line in f.split("\n"):
-    #     print(left + line + " " * (content_width - len(line)) + end)
+def print_formatted(text, modifiers=""):
+    print(left + "\x1b[1;32;40m" + modifiers + text + " " * (content_width - len(text)) + "\x1b[0m" + "│")
 
 def render_line(line):
     if line == "":
-        print(space)
+        print_formatted("")
     elif line[0] == "/":
         pass
     elif line[0] == "#":
-        font = FigletFont("/home/will/github/pretty-markdown/big-money-ne")
-        print(font.height)
+        heading = line.count("#")
+        if heading > len(figlets):
+            print("Too many headings")
+            quit()
+        f = figlets[heading - 1].renderText(line[2:]).split("\n")
 
-        f = pyfiglet.figlet_format(line[2:], font="/home/will/github/pretty-markdown/big-money-ne", width=content_width, justify="center").split("\n")
         print_ascii(f)
     elif line[0] == "-":
-        print("list")
+        print_formatted("  " + line, modifiers="\x1b[1;33;40m")
     elif line.replace(" ", "").strip() == "":
-        print(space)
+        print_formatted("")
     else:
-        print(left + line + " " * (content_width - len(line)) + end)
-    
+        print_formatted("  " + line)
+ 
