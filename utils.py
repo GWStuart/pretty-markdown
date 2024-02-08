@@ -38,12 +38,40 @@ def print_ascii(f):
     rows = int((len(f) - 1) / font_height)
     for i in range(rows):
         for line in f[i*font_height:(i+1)*font_height]:
-            print_formatted(line, modifiers="\x1b[1;31;40m")
+            print_formatted(line, colour=31, ascii_type=1)
 
-def print_formatted(text, modifiers=""):
-    print(left + "\x1b[1;32;40m" + modifiers + text + " " * (content_width - len(text)) + "\x1b[0m" + "│")
+def print_formatted(text, colour=32, ascii_type=0):
+    length = len(text)
+    print(left + f"\x1b[{ascii_type};{colour};40m" + text + " " * (content_width - length) + "\x1b[0m" + "│")
+
+def _print_colours():
+    for i in range(7):
+        print(f"\x1b[1;{31 + i};40m  {31 + i}test ")
+    print("\033[0m")
 
 def render_line(line):
+    if "**" in line:
+        first = line.index("**")
+        second = first + line[first + 1:].index("**") + 1
+        line = line[0:first] + "\x1b[1m" + line[first+2:second] + "\x1b[0;32;40m" + line[second+2:]
+
+        #line = line.replace("**", "\x1b[1m") # \x1b[1")
+        ascii_type = 0
+    elif "*" in line:
+        first = line.index("*")
+        second = first + line[first + 1:].index("*") + 1
+        line = line[0:first] + "\x1b[3m" + line[first+1:second] + "\x1b[0;32;40m" + line[second+1:]
+        # line = line.replace("*", "\x1b[3m") # \x1b[1")
+        ascii_type = 0
+    elif "`" in line:
+        first = line.index("`")
+        second = first + line[first + 1:].index("`") + 1
+        line = line[0:first] + "\x1b[2m" + line[first+1:second] + "\x1b[0;32;40m" + line[second+1:]
+
+        ascii_type = 0
+    else:
+        ascii_type = 0
+
     if line == "":
         print_formatted("")
     elif line[0] == "/":
@@ -57,9 +85,9 @@ def render_line(line):
 
         print_ascii(f)
     elif line[0] == "-":
-        print_formatted("  " + line, modifiers="\x1b[1;33;40m")
+        print_formatted("  " + line, colour=33, ascii_type=ascii_type)
     elif line.replace(" ", "").strip() == "":
         print_formatted("")
     else:
-        print_formatted("  " + line)
- 
+        print_formatted("  " + line, ascii_type=ascii_type)
+
