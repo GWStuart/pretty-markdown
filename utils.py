@@ -38,44 +38,30 @@ def print_ascii(f):
     rows = int((len(f) - 1) / font_height)
     for i in range(rows):
         for line in f[i*font_height:(i+1)*font_height]:
-            print_formatted(line, colour=31, ascii_type=1)
+            print_formatted(line, colour=31)
 
-def print_formatted(text, colour=32, ascii_type=0):
+def print_formatted(text, colour=32):
     length = len(text)
-    print(left + f"\x1b[{ascii_type};{colour};40m" + text + " " * (content_width - length) + "\x1b[0m" + "│")
+    print(left + f"\x1b[0;{colour};40m" + text + " " * (content_width - length) + "\x1b[0m" + "│")
 
 def _print_colours():
     for i in range(7):
         print(f"\x1b[1;{31 + i};40m  {31 + i}test ")
     print("\033[0m")
 
+def modifier_check(line, modifier, effect, line_colour=32): # Checks for the specific modifier and applys the given ascii effect
+    if modifier in line:
+        first = line.index(modifier)
+        second = first + line[first + 1:].index(modifier) + 1
+        length = len(modifier)
+        line = line[0:first] + effect + line[first+length:second] + f"\x1b[0;{line_colour};40m" + line[second+length:]
+
+    return line
+
+
 def render_line(line):
-    if "**" in line:
-        first = line.index("**")
-        second = first + line[first + 1:].index("**") + 1
-        line = line[0:first] + "\x1b[1m" + line[first+2:second] + "\x1b[0;32;40m" + line[second+2:]
-
-        #line = line.replace("**", "\x1b[1m") # \x1b[1")
-        ascii_type = 0
-    elif "*" in line:
-        first = line.index("*")
-        second = first + line[first + 1:].index("*") + 1
-        line = line[0:first] + "\x1b[3m" + line[first+1:second] + "\x1b[0;32;40m" + line[second+1:]
-        # line = line.replace("*", "\x1b[3m") # \x1b[1")
-        ascii_type = 0
-    elif "`" in line:
-        first = line.index("`")
-        second = first + line[first + 1:].index("`") + 1
-        line = line[0:first] + "\x1b[2m" + line[first+1:second] + "\x1b[0;32;40m" + line[second+1:]
-
-        ascii_type = 0
-    else:
-        ascii_type = 0
-
     if line == "":
-        print_formatted("")
-    elif line[0] == "/":
-        pass
+        colour = 32
     elif line[0] == "#":
         heading = line.count("#")
         if heading > len(figlets):
@@ -84,10 +70,19 @@ def render_line(line):
         f = figlets[heading - 1].renderText(line[2:]).split("\n")
 
         print_ascii(f)
+        return
     elif line[0] == "-":
-        print_formatted("  " + line, colour=33, ascii_type=ascii_type)
-    elif line.replace(" ", "").strip() == "":
-        print_formatted("")
+        colour = 33
     else:
-        print_formatted("  " + line, ascii_type=ascii_type)
+        colour = 32
+
+    line = modifier_check(line, "**", "\x1b[1m", line_colour=colour)
+    line = modifier_check(line, "*", "\x1b[3m", line_colour=colour)
+    line = modifier_check(line, "`", "\x1b[2m", line_colour=colour)
+    line = modifier_check(line, "__", "\x1b[4m", line_colour=colour)
+    line = modifier_check(line, "~~", "\x1b[9m", line_colour=colour)
+    line = modifier_check(line, "==", "\x1b[7m", line_colour=colour)
+    
+
+    print_formatted("  " + line, colour=colour)
 
