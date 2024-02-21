@@ -2,6 +2,12 @@ import os
 import pyfiglet
 from pyfiglet import FigletFont, Figlet
 
+"""
+TODO:
+    there will be an issue with wordwrapping if the line contains modifiers
+"""
+
+content_pad = "  "
 columns = os.get_terminal_size().columns
 
 if columns > 120: 
@@ -40,26 +46,40 @@ def print_ascii(f):
         for line in f[i*font_height:(i+1)*font_height]:
             print_formatted(line, colour=31)
 
-def print_formatted(text, colour=32):
-    length = len(text)
+def print_formatted(text, length="auto", colour=32):
+    if length == "auto":
+        length = len(text)
+
+    part2 = False
+    if length > content_width:
+        part2 = text[content_width:]
+        text = text[:content_width]
+        length = len(text)
+
     print(left + f"\x1b[0;{colour};40m" + text + " " * (content_width - length) + "\x1b[0m" + "│")
+
+    if part2:
+        print_formatted(content_pad + part2, colour=colour)
 
 def _print_colours():
     for i in range(7):
         print(f"\x1b[1;{31 + i};40m  {31 + i}test ")
     print("\033[0m")
 
-def modifier_check(line, modifier, effect, line_colour=32): # Checks for the specific modifier and applys the given ascii effect
+def modifier_check(line, length, modifier, effect, line_colour=32): # Checks for the specific modifier and applys the given ascii effect
     if modifier in line:
         first = line.index(modifier)
         second = first + line[first + 1:].index(modifier) + 1
-        length = len(modifier)
-        line = line[0:first] + effect + line[first+length:second] + f"\x1b[0;{line_colour};40m" + line[second+length:]
+        mod_length = len(modifier)
+        line = line[0:first] + effect + line[first+mod_length:second] + f"\x1b[0;{line_colour};40m" + line[second+mod_length:]
+        length -= mod_length * 2
 
-    return line
+    return line, length
 
 
 def render_line(line):
+    length = len(line)
+
     if line == "":
         colour = 32
     elif line[0] == "#":
@@ -76,13 +96,12 @@ def render_line(line):
     else:
         colour = 32
 
-    line = modifier_check(line, "**", "\x1b[1m", line_colour=colour)
-    line = modifier_check(line, "*", "\x1b[3m", line_colour=colour)
-    line = modifier_check(line, "`", "\x1b[2m", line_colour=colour)
-    line = modifier_check(line, "__", "\x1b[4m", line_colour=colour)
-    line = modifier_check(line, "~~", "\x1b[9m", line_colour=colour)
-    line = modifier_check(line, "==", "\x1b[7m", line_colour=colour)
-    
+    line, length = modifier_check(line, length, "**", "\x1b[1m", line_colour=colour)
+    line, length = modifier_check(line, length, "*", "\x1b[3m", line_colour=colour)
+    line, length = modifier_check(line, length, "`", "\x1b[2m", line_colour=colour)
+    line, length = modifier_check(line, length, "__", "\x1b[4m", line_colour=colour)
+    line, length = modifier_check(line, length, "~~", "\x1b[9m", line_colour=colour)
+    line, length = modifier_check(line, length, "==", "\x1b[7m", line_colour=colour)
 
-    print_formatted("  " + line, colour=colour)
+    print_formatted(content_pad + line, colour=colour, length=length + 2)
 
