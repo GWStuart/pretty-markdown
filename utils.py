@@ -1,6 +1,6 @@
 import os
 import pyfiglet
-from pyfiglet import FigletFont, Figlet
+from pyfiglet import Figlet
 
 """
 TODO:
