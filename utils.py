@@ -24,15 +24,12 @@ else:
 box_start = (columns - (content_width + 2)) // 2
 left = " " * box_start + "│" 
 
-font = "standard" # ~/github/pretty-markdown/big-money-ne"
+font = "standard"
 figlets = [Figlet(font=font, width=content_width, justify="center"),
            Figlet(font=font, width=content_width)]
-# figlet_center = Figlet(font=font, width=content_width, justify="center")
-# figlet_left = Figlet(font=font, width=content_width)
 font_height = figlets[0].Font.height
 
 def render_file(file):
-    # render top of file
     print(" " * box_start + "╭" + "─" * content_width + "╮" + " " * box_start)
 
     for line in file:
