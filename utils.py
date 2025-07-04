@@ -73,7 +73,6 @@ def modifier_check(line, length, modifier, effect, line_colour=32): # Checks for
 
     return line, length
 
-
 def render_line(line):
     length = len(line)
 
